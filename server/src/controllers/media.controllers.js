@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { exec } from "child_process";
+import { execFile } from "child_process";
 import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
 import { Video } from "../models/database.js";
@@ -14,8 +14,12 @@ const projectRoot = path.resolve(__dirname, "..", "..");
 // Helper function to extract video duration using ffprobe
 const getVideoDuration = (videoPath) => {
   return new Promise((resolve, reject) => {
-    const command = `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1:noprint_wrappers=1 "${videoPath}"`;
-    exec(command, (error, stdout, stderr) => {
+    execFile("ffprobe", [
+      "-v", "error",
+      "-show_entries", "format=duration",
+      "-of", "default=noprint_wrappers=1:nokey=1:noprint_wrappers=1",
+      videoPath,
+    ], (error, stdout, stderr) => {
       if (error) {
         console.error("FFprobe error:", error);
         resolve(0); // Return 0 if unable to get duration
@@ -44,11 +48,17 @@ export const uploadVideo = async (req, res) => {
 
     fs.mkdirSync(baseUploadPath, { recursive: true });
 
-    const ffmpegCommand = `ffmpeg -i "${videoPath}" -codec:v libx264 -codec:a aac -hls_time 10 -hls_playlist_type vod -hls_segment_filename "${baseUploadPath}/segment%03d.ts" -y "${hlsPath}"`;
-    
-    // console.log("Running FFmpeg command:", ffmpegCommand);
-    
-    exec(ffmpegCommand, (error, stdout, stderr) => {
+    // console.log("Running FFmpeg command for HLS conversion");
+
+    execFile("ffmpeg", [
+      "-i", videoPath,
+      "-codec:v", "libx264",
+      "-codec:a", "aac",
+      "-hls_time", "10",
+      "-hls_playlist_type", "vod",
+      "-hls_segment_filename", `${baseUploadPath}/segment%03d.ts`,
+      "-y", hlsPath,
+    ], (error, stdout, stderr) => {
       if (error) {
         console.error(`FFmpeg HLS error: ${error.message}`);
         console.error(`FFmpeg stderr: ${stderr}`);
@@ -69,9 +79,12 @@ export const uploadVideo = async (req, res) => {
       // console.log("Directory contents:", fs.readdirSync(baseUploadPath));
 
       // Extract frame for thumbnail
-      const ffmpegCommandThumbnail = `ffmpeg -i "${videoPath}" -ss 00:00:02 -vframes 1 -y "${framePath}"`;
-      
-      exec(ffmpegCommandThumbnail, (error, stdout, stderr) => {
+      execFile("ffmpeg", [
+        "-i", videoPath,
+        "-ss", "00:00:02",
+        "-vframes", "1",
+        "-y", framePath,
+      ], (error, stdout, stderr) => {
         if (error) {
           console.error(`FFmpeg frame extraction error: ${error.message}`);
           console.error(`FFmpeg stderr: ${stderr}`);

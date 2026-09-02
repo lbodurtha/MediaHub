@@ -25,7 +25,11 @@ const storage = multer.diskStorage({
     cb(null, uploadsPath);
   },
   filename: (req, file, cb) => {
-    const filename = `${file.fieldname}-${uuidv4()}${path.extname(file.originalname)}`;
+    const rawExt = path.extname(file.originalname);
+    // Strip every character that is not alphanumeric or a dot so the
+    // extension cannot inject shell metacharacters into exec() commands.
+    const safeExt = rawExt.replace(/[^a-zA-Z0-9.]/g, "");
+    const filename = `${file.fieldname}-${uuidv4()}${safeExt}`;
     console.log("Multer filename:", filename);
     cb(null, filename);
   },
