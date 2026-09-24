@@ -28,6 +28,9 @@ Thumbs.db
 # Uploads (server runtime data)
 server/uploads/
 
+# MongoDB data
+server/data/
+
 # TypeScript build output
 *.tsbuildinfo
 
