@@ -1,19 +1,18 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import { exec } from "child_process";
 import mediaRoutes from "./routes/media.routes.js";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import { config } from "./config/env.js";
+import { connectDatabase } from "./config/database.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config();
-
 const app = express();
-const port = process.env.PORT || 8000;
+const port = config.PORT;
 
 
 exec('ffmpeg -version', (error, stdout, stderr) => {
@@ -26,7 +25,7 @@ exec('ffmpeg -version', (error, stdout, stderr) => {
 });
 
 const corsOptions = {
-  origin: process.env.CLIENT_URI || ['http://localhost:5173'],
+  origin: config.CLIENT_URI || ['http://localhost:5173'],
   credentials: true
 };
 
@@ -96,8 +95,14 @@ app.use((err, req, res, next) => {
   res.status(500).send({ message: "An unexpected error occurred!" });
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-  // console.log(`Uploads directory: ${uploadsPath}`);
-  // console.log(`CORS origins: ${JSON.stringify(corsOptions.origin)}`);
+async function startServer() {
+  await connectDatabase();
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+}
+
+startServer().catch((err) => {
+  console.error("Failed to start server:", err);
+  process.exit(1);
 });
