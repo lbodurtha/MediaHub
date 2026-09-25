@@ -11,6 +11,7 @@ export {
   videoUploadSchema,
   videoDeleteSchema,
   videoIdParamSchema,
+  videoQuerySchema,
 } from './schemas/index.js';
 
 export {

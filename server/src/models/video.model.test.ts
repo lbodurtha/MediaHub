@@ -1,24 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import mongoose from 'mongoose';
-
-// Re-create the schema here to test validation without needing
-// the @mediahub/shared import to resolve at test time
-const videoSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: { type: String, default: 'No description' },
-  videoPath: { type: String, required: true },
-  thumbnailPath: { type: String, default: '' },
-  uploaderId: { type: String, default: 'anonymous' },
-  duration: { type: Number, default: 0, min: 0 },
-  views: { type: Number, default: 0, min: 0 },
-  uploadDate: { type: Date, default: Date.now },
-});
-
-const TestVideo = mongoose.model('TestVideo', videoSchema);
+import { Video } from './video.model.js';
 
 describe('Video model schema', () => {
   it('should create a Video with valid data', () => {
-    const video = new TestVideo({
+    const video = new Video({
       title: 'Test Video',
       videoPath: '/videos/test.mp4',
     });
@@ -30,7 +15,7 @@ describe('Video model schema', () => {
   });
 
   it('should apply default values', () => {
-    const video = new TestVideo({
+    const video = new Video({
       title: 'Test Video',
       videoPath: '/videos/test.mp4',
     });
@@ -44,7 +29,7 @@ describe('Video model schema', () => {
   });
 
   it('should require title', () => {
-    const video = new TestVideo({
+    const video = new Video({
       videoPath: '/videos/test.mp4',
     });
 
@@ -54,7 +39,7 @@ describe('Video model schema', () => {
   });
 
   it('should require videoPath', () => {
-    const video = new TestVideo({
+    const video = new Video({
       title: 'Test Video',
     });
 
@@ -64,7 +49,7 @@ describe('Video model schema', () => {
   });
 
   it('should default duration to 0', () => {
-    const video = new TestVideo({
+    const video = new Video({
       title: 'Test Video',
       videoPath: '/videos/test.mp4',
     });
@@ -73,7 +58,7 @@ describe('Video model schema', () => {
   });
 
   it('should default views to 0', () => {
-    const video = new TestVideo({
+    const video = new Video({
       title: 'Test Video',
       videoPath: '/videos/test.mp4',
     });
@@ -82,7 +67,7 @@ describe('Video model schema', () => {
   });
 
   it('should reject negative views', () => {
-    const video = new TestVideo({
+    const video = new Video({
       title: 'Test Video',
       videoPath: '/videos/test.mp4',
       views: -1,
@@ -94,7 +79,7 @@ describe('Video model schema', () => {
   });
 
   it('should reject negative duration', () => {
-    const video = new TestVideo({
+    const video = new Video({
       title: 'Test Video',
       videoPath: '/videos/test.mp4',
       duration: -5,

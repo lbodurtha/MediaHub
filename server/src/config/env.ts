@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 dotenv.config();
 
-const envSchema = z.object({
+export const envSchema = z.object({
   PORT: z.coerce.number().default(8000),
   DATABASE_URI: z.string().min(1, 'DATABASE_URI is required'),
   CLIENT_URI: z.string().default('http://localhost:5173'),

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { videoUploadSchema, videoDeleteSchema, videoIdParamSchema } from './video.schemas.js';
+import { videoUploadSchema, videoDeleteSchema, videoIdParamSchema, videoQuerySchema } from './video.schemas.js';
 
 describe('videoUploadSchema', () => {
   it('should accept valid input with description and uploaderId', () => {
@@ -88,6 +88,42 @@ describe('videoIdParamSchema', () => {
 
   it('should reject missing id', () => {
     const result = videoIdParamSchema.safeParse({});
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('videoQuerySchema', () => {
+  it('should accept valid query with all fields', () => {
+    const result = videoQuerySchema.safeParse({
+      page: '1',
+      limit: '10',
+      uploaderId: 'user-123',
+      sortBy: 'uploadDate',
+      order: 'desc',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('should accept an empty query (all fields optional)', () => {
+    const result = videoQuerySchema.safeParse({});
+    expect(result.success).toBe(true);
+  });
+
+  it('should coerce page from string to number', () => {
+    const result = videoQuerySchema.safeParse({ page: '3' });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.page).toBe(3);
+    }
+  });
+
+  it('should reject invalid sortBy value', () => {
+    const result = videoQuerySchema.safeParse({ sortBy: 'invalid' });
+    expect(result.success).toBe(false);
+  });
+
+  it('should reject limit exceeding max', () => {
+    const result = videoQuerySchema.safeParse({ limit: '200' });
     expect(result.success).toBe(false);
   });
 });
