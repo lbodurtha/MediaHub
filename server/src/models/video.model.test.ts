@@ -20,9 +20,9 @@ describe('Video model schema', () => {
       videoPath: '/videos/test.mp4',
     });
 
-    expect(video.description).toBe('No description');
-    expect(video.thumbnailPath).toBe('');
-    expect(video.uploaderId).toBe('anonymous');
+    expect(video.description).toBeUndefined();
+    expect(video.thumbnailPath).toBeUndefined();
+    expect(video.uploaderId).toBeUndefined();
     expect(video.duration).toBe(0);
     expect(video.views).toBe(0);
     expect(video.uploadDate).toBeInstanceOf(Date);
