@@ -4,7 +4,10 @@ import { z } from 'zod';
 dotenv.config();
 
 export const envSchema = z.object({
-  PORT: z.coerce.number().default(8000),
+  PORT: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.coerce.number().default(8000)
+  ),
   DATABASE_URI: z.string().min(1, 'DATABASE_URI is required'),
   CLIENT_URI: z.string().default('http://localhost:5173'),
   CLOUDINARY_NAME: z.string().min(1, 'CLOUDINARY_NAME is required'),
