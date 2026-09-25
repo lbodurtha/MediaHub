@@ -6,70 +6,62 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from '@typescript-eslint/eslint-plugin'
 import tsparser from '@typescript-eslint/parser'
 
+const sharedLanguageOptions = {
+  ecmaVersion: 2020,
+  globals: globals.browser,
+  parserOptions: {
+    ecmaVersion: 'latest',
+    ecmaFeatures: { jsx: true },
+    sourceType: 'module',
+  },
+}
+
+const sharedSettings = { react: { version: '18.3' } }
+
+const sharedPlugins = {
+  react,
+  'react-hooks': reactHooks,
+  'react-refresh': reactRefresh,
+}
+
+const sharedRules = {
+  ...js.configs.recommended.rules,
+  ...react.configs.recommended.rules,
+  ...react.configs['jsx-runtime'].rules,
+  ...reactHooks.configs.recommended.rules,
+  'react/jsx-no-target-blank': 'off',
+  'react-refresh/only-export-components': [
+    'warn',
+    { allowConstantExport: true },
+  ],
+}
+
 export default [
   { ignores: ['dist'] },
   {
     files: ['**/*.{js,jsx}'],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        ecmaFeatures: { jsx: true },
-        sourceType: 'module',
-      },
-    },
-    settings: { react: { version: '18.3' } },
-    plugins: {
-      react,
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
-    },
+    languageOptions: sharedLanguageOptions,
+    settings: sharedSettings,
+    plugins: sharedPlugins,
     rules: {
-      ...js.configs.recommended.rules,
-      ...react.configs.recommended.rules,
-      ...react.configs['jsx-runtime'].rules,
-      ...reactHooks.configs.recommended.rules,
-      'react/jsx-no-target-blank': 'off',
-      'react/prop-types': 'off',
-      'no-unused-vars': 'warn',
-      'react/no-unescaped-entities': 'warn',
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+      ...sharedRules,
     },
   },
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
+      ...sharedLanguageOptions,
       parser: tsparser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        ecmaFeatures: { jsx: true },
-        sourceType: 'module',
-      },
     },
-    settings: { react: { version: '18.3' } },
+    settings: sharedSettings,
     plugins: {
-      react,
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
+      ...sharedPlugins,
       '@typescript-eslint': tseslint,
     },
     rules: {
-      ...js.configs.recommended.rules,
-      ...react.configs.recommended.rules,
-      ...react.configs['jsx-runtime'].rules,
-      ...reactHooks.configs.recommended.rules,
+      ...sharedRules,
       ...tseslint.configs.recommended.rules,
-      'react/jsx-no-target-blank': 'off',
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+      'react/prop-types': 'off',
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': ['warn'],
     },
