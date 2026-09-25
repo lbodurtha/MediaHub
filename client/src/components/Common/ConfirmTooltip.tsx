@@ -1,6 +1,17 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 
-const ConfirmTooltip = ({
+interface ConfirmTooltipProps {
+  open: boolean;
+  title?: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  darkMode: boolean;
+}
+
+const ConfirmTooltip: React.FC<ConfirmTooltipProps> = ({
   open,
   title = "Confirm action",
   message,
@@ -10,13 +21,13 @@ const ConfirmTooltip = ({
   onCancel,
   darkMode,
 }) => {
-  const tooltipRef = useRef(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
 
-    const handleOutsideClick = (event) => {
-      if (tooltipRef.current && !tooltipRef.current.contains(event.target)) {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (tooltipRef.current && !tooltipRef.current.contains(event.target as Node)) {
         onCancel();
       }
     };

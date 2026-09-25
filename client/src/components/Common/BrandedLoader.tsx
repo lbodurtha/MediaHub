@@ -1,6 +1,24 @@
+import React from 'react';
 import { ToggleTheme } from "../../context/UserContext";
 
-const BrandedLoader = ({ message = "Preparing your workspace" }) => {
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'lord-icon': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        src?: string;
+        trigger?: string;
+        stroke?: string;
+        colors?: string;
+      };
+    }
+  }
+}
+
+interface BrandedLoaderProps {
+  message?: string;
+}
+
+const BrandedLoader: React.FC<BrandedLoaderProps> = ({ message = "Preparing your workspace" }) => {
   const { darkMode } = ToggleTheme();
 
   return (
