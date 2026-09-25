@@ -3,7 +3,7 @@ interface EnvConfig {
   VITE_CLERK_PUBLISHABLE_KEY: string;
 }
 
-function getEnvVar(key: string, fallback?: string): string {
+export function getEnvVar(key: string, fallback?: string): string {
   const value = import.meta.env[key] as string | undefined;
   if (!value && fallback === undefined) {
     throw new Error(`Missing required environment variable: ${key}`);
