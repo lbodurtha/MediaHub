@@ -1,13 +1,10 @@
+import type { z } from 'zod';
+import type { videoUploadSchema, videoDeleteSchema } from '../schemas/video.schemas.js';
 import type { IVideoDocument } from './video.js';
 
-export interface VideoUploadBody {
-  description?: string;
-  uploaderId?: string;
-}
+export type VideoUploadBody = z.infer<typeof videoUploadSchema>;
 
-export interface VideoDeleteBody {
-  uploaderId: string;
-}
+export type VideoDeleteBody = z.infer<typeof videoDeleteSchema>;
 
 export interface ApiErrorResponse {
   error: {
