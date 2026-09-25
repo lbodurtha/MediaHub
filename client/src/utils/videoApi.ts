@@ -12,10 +12,15 @@ export interface Video {
   uploadDate: string;
 }
 
+export interface ApiResult<T = Record<string, unknown>> {
+  message: string;
+  data?: T;
+}
+
 const API_BASE_URL = env.VITE_BACKEND_URI;
 
 export const videoApi = {
-  incrementViews: async (videoId: string): Promise<Record<string, unknown> | null> => {
+  incrementViews: async (videoId: string): Promise<ApiResult | null> => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/videos/${videoId}/view`, {
         method: 'POST',
