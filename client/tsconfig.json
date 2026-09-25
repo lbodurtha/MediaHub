@@ -13,6 +13,8 @@
     "jsx": "react-jsx",
     "strict": true,
     "allowJs": true,
+    // checkJs is intentionally false during the JS-to-TS migration; M4 will
+    // progressively enable checking as each .jsx file is converted to .tsx.
     "checkJs": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
