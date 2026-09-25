@@ -45,6 +45,9 @@ export default [
     plugins: sharedPlugins,
     rules: {
       ...sharedRules,
+      'react/prop-types': 'off',
+      'no-unused-vars': 'warn',
+      'react/no-unescaped-entities': 'warn',
     },
   },
   {
