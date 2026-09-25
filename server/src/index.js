@@ -25,7 +25,7 @@ exec('ffmpeg -version', (error, stdout, stderr) => {
 });
 
 const corsOptions = {
-  origin: config.CLIENT_URI || ['http://localhost:5173'],
+  origin: [config.CLIENT_URI],
   credentials: true
 };
 
@@ -96,10 +96,10 @@ app.use((err, req, res, next) => {
 });
 
 async function startServer() {
-  await connectDatabase();
   app.listen(port, () => {
     console.log(`Server running on port ${port}`);
   });
+  await connectDatabase();
 }
 
 startServer().catch((err) => {
