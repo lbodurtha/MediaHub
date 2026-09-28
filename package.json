@@ -17,8 +17,9 @@
     "lint": "npm run lint -w client"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@vitest/coverage-v8": "^3.0.0",
     "typescript": "~5.6.3",
-    "vitest": "^3.0.0",
-    "@vitest/coverage-v8": "^3.0.0"
+    "vitest": "^3.0.0"
   }
 }
