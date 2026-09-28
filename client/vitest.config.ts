@@ -6,6 +6,10 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: [],
+    setupFiles: ['./vitest.setup.ts'],
+    // e2e/ hosts Playwright specs which use their own test runner and are
+    // invoked via `npx playwright test`. Excluding them here prevents Vitest
+    // from trying to collect them (and crashing on Playwright's test.describe).
+    exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
   },
 });

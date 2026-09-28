@@ -17,7 +17,27 @@ export interface ApiResult<T = Record<string, unknown>> {
   data?: T;
 }
 
+// GetTokenFn matches Clerk's useAuth().getToken signature. Kept narrow here
+// so this module does not need to import Clerk types directly; callers pass
+// the getToken function they already hold.
+export type GetTokenFn = () => Promise<string | null>;
+
 const API_BASE_URL = env.VITE_BACKEND_URI;
+
+// authorizedHeaders builds request headers with a Clerk-issued Bearer token
+// when getToken yields one. Throws if the caller is unauthenticated so a
+// mutation cannot be silently sent without credentials — the fix for the
+// original Express backend which trusted a client-generated uploaderId.
+async function authorizedHeaders(getToken: GetTokenFn): Promise<HeadersInit> {
+  const token = await getToken();
+  if (!token) {
+    throw new Error('Not authenticated: Clerk getToken returned null');
+  }
+  return {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  };
+}
 
 export const videoApi = {
   incrementViews: async (videoId: string): Promise<ApiResult | null> => {
@@ -53,6 +73,35 @@ export const videoApi = {
       console.error('Error fetching video metadata:', error);
       return null;
     }
+  },
+
+  /**
+   * deleteVideo removes a video the caller owns.
+   *
+   * Ownership is enforced server-side against the Clerk-authenticated
+   * subject decoded from the Authorization header — the client never sends
+   * an uploaderId body. This closes the security gap in the Express
+   * backend where any user could delete any video by claiming their id.
+   */
+  deleteVideo: async (videoId: string, getToken: GetTokenFn): Promise<ApiResult> => {
+    const headers = await authorizedHeaders(getToken);
+    const response = await fetch(`${API_BASE_URL}/videos/${videoId}`, {
+      method: 'DELETE',
+      headers,
+    });
+
+    let body: ApiResult | null = null;
+    try {
+      body = (await response.json()) as ApiResult;
+    } catch {
+      body = null;
+    }
+
+    if (!response.ok) {
+      const message = body?.message ?? `Delete failed (HTTP ${response.status})`;
+      throw new Error(message);
+    }
+    return body ?? { message: 'Video deleted successfully' };
   },
 
   extractDurationFromUrl: (videoUrl: string): Promise<string> => {

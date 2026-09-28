@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 import { VideoCard } from './VideoCard';
 import { Film, Headset } from 'lucide-react';
 import { ToggleTheme } from "../../context/UserContext";
 import recommendedVideos from '../../assets/data/recommendedVideos';
 import { checkVideoFileExists, formatVideoErrorMessage } from '../../utils/videoIntegrity';
+import { videoApi } from '../../utils/videoApi';
 import AppDialog from '../Common/AppDialog';
 
 // Helper function to format seconds to MM:SS
@@ -24,6 +26,8 @@ const formatViews = (views) => {
 
 export const VideoGallery = ({ videos, onVideoSelect, onVideoDelete }) => {
   const { darkMode, userId } = ToggleTheme();
+  const { getToken } = useAuth();
+  const { user } = useUser();
   const [deleteFeedback, setDeleteFeedback] = useState(null);
   const [dialogConfig, setDialogConfig] = useState({
     open: false,
@@ -36,8 +40,14 @@ export const VideoGallery = ({ videos, onVideoSelect, onVideoDelete }) => {
     onSecondary: null,
   });
 
-  // Filter videos to show only user's uploaded videos
-  const userVideos = videos.filter(video => video.uploaderId === userId);
+  // Filter videos to show only the current user's uploads. The Go backend
+  // attributes uploads to the Clerk-authenticated user id, so the filter
+  // uses user.id (Clerk). Legacy rows carrying the old localStorage-generated
+  // userId are still matched as a fallback until the backfill script runs.
+  const clerkUserId = user?.id;
+  const userVideos = videos.filter(
+    (video) => video.uploaderId === clerkUserId || video.uploaderId === userId,
+  );
 
   const handleVideoSelect = async (video) => {
     const videoUrl = `${import.meta.env.VITE_BACKEND_URI}${video.videoPath}`;
@@ -91,26 +101,14 @@ export const VideoGallery = ({ videos, onVideoSelect, onVideoDelete }) => {
 
   const handleDelete = async (videoId) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URI}/videos/${videoId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ uploaderId: userId }),
-      });
-
-      if (response.ok) {
-        setDeleteFeedback({ type: 'success', message: 'Video deleted successfully.' });
-        if (onVideoDelete) {
-          onVideoDelete(videoId);
-        }
-      } else {
-        const error = await response.json();
-        setDeleteFeedback({ type: 'error', message: error.message || 'Failed to delete video.' });
+      await videoApi.deleteVideo(videoId, getToken);
+      setDeleteFeedback({ type: 'success', message: 'Video deleted successfully.' });
+      if (onVideoDelete) {
+        onVideoDelete(videoId);
       }
     } catch (error) {
       console.error("Error deleting video:", error);
-      setDeleteFeedback({ type: 'error', message: 'Error deleting video.' });
+      setDeleteFeedback({ type: 'error', message: error?.message || 'Error deleting video.' });
     }
   };
 
