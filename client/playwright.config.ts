@@ -16,9 +16,8 @@ export default defineConfig({
     ],
   ],
   use: {
-    // MediaHub Vite dev server. QA verified on 5178; lifecycle default is 5173.
-    // Both serve the same app — align with whichever is currently running.
-    baseURL: 'http://localhost:5178',
+    // MediaHub Vite dev server on port 5173 (confirmed running at test time).
+    baseURL: 'http://localhost:5173',
     headless: true,
     screenshot: 'on',
     video: 'retain-on-failure',

@@ -10,13 +10,13 @@ import { test, expect } from '@playwright/test';
  * are not stable and auth is not testable with the test Clerk key.
  *
  * Waits: Clerk widget may take 200-500ms to paint after React mounts.
- * Using waitForSelector on the h1 covers that window.
+ * expect().toBeVisible() with a timeout covers that window.
  */
 test.describe('MediaHub Sign-In page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/sign-in');
     // Wait for the heading our component renders (not Clerk internals)
-    await page.waitForSelector('h1', { timeout: 5000 });
+    await expect(page.locator('h1')).toBeVisible({ timeout: 5000 });
   });
 
   test('page title is MediaHub', async ({ page }) => {
@@ -48,12 +48,20 @@ test.describe('MediaHub Sign-In page', () => {
     ).toBeVisible();
   });
 
+  test('Clerk card container (div.rounded-2xl) is present in DOM', async ({ page }) => {
+    // The outer wrapper card is rendered by our SignInPage shell.
+    // The inner Clerk <SignIn> widget is empty with the placeholder key —
+    // we assert the container exists (toBeAttached) rather than toBeVisible
+    // because it may have zero height when the widget does not inject content.
+    await expect(page.locator('div.rounded-2xl').first()).toBeAttached();
+  });
+
   test('navigating to /sign-in directly renders the sign-in card without errors', async ({ page }) => {
     // Re-navigate to verify the page is stable and no JS errors surface
     const errors: string[] = [];
     page.on('pageerror', (err) => errors.push(err.message));
     await page.goto('/sign-in');
-    await page.waitForSelector('h1', { timeout: 5000 });
+    await expect(page.locator('h1')).toBeVisible({ timeout: 5000 });
     // "Clerk: Failed to load Clerk" is expected with the test Clerk key in headless mode
     const fatal = errors.filter(
       (e) => !e.includes('Warning') && !e.toLowerCase().includes('clerk')

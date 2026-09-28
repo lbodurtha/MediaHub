@@ -76,4 +76,28 @@ test.describe('MediaHub Homepage', () => {
     await expect(page.getByRole('button', { name: 'Videos' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Editor Studio' })).toBeVisible();
   });
+
+  test('no fatal JavaScript errors on landing page', async ({ page }) => {
+    // Collect all uncaught JS errors during full page load
+    const errors: string[] = [];
+    page.on('pageerror', (err) => errors.push(err.message));
+    await page.goto('/');
+    // Brief wait to let any deferred scripts execute
+    await page.waitForLoadState('networkidle');
+    // Clerk-related errors are expected with the test-env placeholder key
+    const fatal = errors.filter(
+      (e) => !e.includes('Warning') && !e.toLowerCase().includes('clerk')
+    );
+    expect(fatal).toHaveLength(0);
+  });
+
+  test('feature section "Everything You Need for Media Processing" h2 is visible', async ({ page }) => {
+    await expect(
+      page.getByRole('heading', { name: 'Everything You Need for Media Processing', level: 2 })
+    ).toBeVisible();
+  });
+
+  test('footer copyright text contains "MediaHub"', async ({ page }) => {
+    await expect(page.getByText('MediaHub. All rights reserved', { exact: false })).toBeVisible();
+  });
 });
