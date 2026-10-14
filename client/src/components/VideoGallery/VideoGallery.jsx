@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 import { VideoCard } from './VideoCard';
 import { Film, Headset } from 'lucide-react';
 import { ToggleTheme } from "../../context/UserContext";
 import recommendedVideos from '../../assets/data/recommendedVideos';
 import { checkVideoFileExists, formatVideoErrorMessage } from '../../utils/videoIntegrity';
+import { videoApi } from '../../utils/videoApi';
+import { env } from '../../config/env';
 import AppDialog from '../Common/AppDialog';
 
 // Helper function to format seconds to MM:SS
@@ -23,7 +26,9 @@ const formatViews = (views) => {
 };
 
 export const VideoGallery = ({ videos, onVideoSelect, onVideoDelete }) => {
-  const { darkMode, userId } = ToggleTheme();
+  const { darkMode } = ToggleTheme();
+  const { getToken } = useAuth();
+  const { user } = useUser();
   const [deleteFeedback, setDeleteFeedback] = useState(null);
   const [dialogConfig, setDialogConfig] = useState({
     open: false,
@@ -36,14 +41,16 @@ export const VideoGallery = ({ videos, onVideoSelect, onVideoDelete }) => {
     onSecondary: null,
   });
 
-  // Filter videos to show only user's uploaded videos
-  const userVideos = videos.filter(video => video.uploaderId === userId);
+  const clerkUserId = user?.id;
+  const userVideos = videos.filter(
+    (video) => video.uploaderId === clerkUserId,
+  );
 
   const handleVideoSelect = async (video) => {
-    const videoUrl = `${import.meta.env.VITE_BACKEND_URI}${video.videoPath}`;
+    const videoUrl = `${env.VITE_BACKEND_URI}${video.videoPath}`;
     console.log("Selecting video:", video.title);
     console.log("Video path from DB:", video.videoPath);
-    console.log("Backend URI:", import.meta.env.VITE_BACKEND_URI);
+    console.log("Backend URI:", env.VITE_BACKEND_URI);
     console.log("Full video URL:", videoUrl);
     
     // Check if the video file exists
@@ -91,26 +98,14 @@ export const VideoGallery = ({ videos, onVideoSelect, onVideoDelete }) => {
 
   const handleDelete = async (videoId) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URI}/videos/${videoId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ uploaderId: userId }),
-      });
-
-      if (response.ok) {
-        setDeleteFeedback({ type: 'success', message: 'Video deleted successfully.' });
-        if (onVideoDelete) {
-          onVideoDelete(videoId);
-        }
-      } else {
-        const error = await response.json();
-        setDeleteFeedback({ type: 'error', message: error.message || 'Failed to delete video.' });
+      await videoApi.deleteVideo(videoId, getToken);
+      setDeleteFeedback({ type: 'success', message: 'Video deleted successfully.' });
+      if (onVideoDelete) {
+        onVideoDelete(videoId);
       }
     } catch (error) {
       console.error("Error deleting video:", error);
-      setDeleteFeedback({ type: 'error', message: 'Error deleting video.' });
+      setDeleteFeedback({ type: 'error', message: error?.message || 'Error deleting video.' });
     }
   };
 
@@ -164,7 +159,7 @@ export const VideoGallery = ({ videos, onVideoSelect, onVideoDelete }) => {
             <VideoCard
               key={video._id}
               videoId={video._id}
-              thumbnail={`${import.meta.env.VITE_BACKEND_URI}${video.thumbnailPath}`}
+              thumbnail={`${env.VITE_BACKEND_URI}${video.thumbnailPath}`}
               title={video.title}
               views={formatViews(video.views)}
               duration={formatDuration(video.duration)}
