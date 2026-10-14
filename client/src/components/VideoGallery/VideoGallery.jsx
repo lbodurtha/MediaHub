@@ -25,7 +25,7 @@ const formatViews = (views) => {
 };
 
 export const VideoGallery = ({ videos, onVideoSelect, onVideoDelete }) => {
-  const { darkMode, userId } = ToggleTheme();
+  const { darkMode } = ToggleTheme();
   const { getToken } = useAuth();
   const { user } = useUser();
   const [deleteFeedback, setDeleteFeedback] = useState(null);
@@ -40,13 +40,9 @@ export const VideoGallery = ({ videos, onVideoSelect, onVideoDelete }) => {
     onSecondary: null,
   });
 
-  // Filter videos to show only the current user's uploads. The Go backend
-  // attributes uploads to the Clerk-authenticated user id, so the filter
-  // uses user.id (Clerk). Legacy rows carrying the old localStorage-generated
-  // userId are still matched as a fallback until the backfill script runs.
   const clerkUserId = user?.id;
   const userVideos = videos.filter(
-    (video) => video.uploaderId === clerkUserId || video.uploaderId === userId,
+    (video) => video.uploaderId === clerkUserId,
   );
 
   const handleVideoSelect = async (video) => {
