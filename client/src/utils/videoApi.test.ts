@@ -11,7 +11,7 @@ vi.mock('../config/env', () => ({
   },
 }));
 
-import { videoApi } from './videoApi';
+import { videoApi, authorizedHeaders } from './videoApi';
 
 const ORIGINAL_FETCH = globalThis.fetch;
 
@@ -64,5 +64,19 @@ describe('videoApi.deleteVideo', () => {
       /Not authenticated/,
     );
     expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('authorizedHeaders', () => {
+  it('returns Authorization and Content-Type headers when a token is available', async () => {
+    const getToken = vi.fn(async () => 'test.jwt.token');
+    const headers = (await authorizedHeaders(getToken)) as Record<string, string>;
+    expect(headers.Authorization).toBe('Bearer test.jwt.token');
+    expect(headers['Content-Type']).toBe('application/json');
+  });
+
+  it('throws when getToken returns null', async () => {
+    const getToken = vi.fn(async () => null);
+    await expect(authorizedHeaders(getToken)).rejects.toThrow(/Not authenticated/);
   });
 });

@@ -28,7 +28,7 @@ const API_BASE_URL = env.VITE_BACKEND_URI;
 // when getToken yields one. Throws if the caller is unauthenticated so a
 // mutation cannot be silently sent without credentials — the fix for the
 // original Express backend which trusted a client-generated uploaderId.
-async function authorizedHeaders(getToken: GetTokenFn): Promise<HeadersInit> {
+export async function authorizedHeaders(getToken: GetTokenFn): Promise<HeadersInit> {
   const token = await getToken();
   if (!token) {
     throw new Error('Not authenticated: Clerk getToken returned null');
