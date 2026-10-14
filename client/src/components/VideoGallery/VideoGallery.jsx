@@ -6,6 +6,7 @@ import { ToggleTheme } from "../../context/UserContext";
 import recommendedVideos from '../../assets/data/recommendedVideos';
 import { checkVideoFileExists, formatVideoErrorMessage } from '../../utils/videoIntegrity';
 import { videoApi } from '../../utils/videoApi';
+import { env } from '../../config/env';
 import AppDialog from '../Common/AppDialog';
 
 // Helper function to format seconds to MM:SS
@@ -46,10 +47,10 @@ export const VideoGallery = ({ videos, onVideoSelect, onVideoDelete }) => {
   );
 
   const handleVideoSelect = async (video) => {
-    const videoUrl = `${import.meta.env.VITE_BACKEND_URI}${video.videoPath}`;
+    const videoUrl = `${env.VITE_BACKEND_URI}${video.videoPath}`;
     console.log("Selecting video:", video.title);
     console.log("Video path from DB:", video.videoPath);
-    console.log("Backend URI:", import.meta.env.VITE_BACKEND_URI);
+    console.log("Backend URI:", env.VITE_BACKEND_URI);
     console.log("Full video URL:", videoUrl);
     
     // Check if the video file exists
@@ -158,7 +159,7 @@ export const VideoGallery = ({ videos, onVideoSelect, onVideoDelete }) => {
             <VideoCard
               key={video._id}
               videoId={video._id}
-              thumbnail={`${import.meta.env.VITE_BACKEND_URI}${video.thumbnailPath}`}
+              thumbnail={`${env.VITE_BACKEND_URI}${video.thumbnailPath}`}
               title={video.title}
               views={formatViews(video.views)}
               duration={formatDuration(video.duration)}
